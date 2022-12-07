@@ -88,26 +88,26 @@ class User {
     this.latestTransitionedEpoch = this.userState.calcCurrentEpoch()
   }
 
-  async requestReputation(posRep, negRep, graffitiPreImage, epkNonce) {
-    const epochKeyProof = await this.userState.genEpochKeyProof({nonce: epkNonce})
-    const graffiti = hash1([graffitiPreImage])
-    const data = await fetch(`${SERVER}/api/request`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify(stringifyBigInts({
-        posRep,
-        negRep,
-        graffiti,
-        publicSignals: epochKeyProof.publicSignals,
-        proof: epochKeyProof.proof,
-      }))
-    }).then(r => r.json())
-    await provider.waitForTransaction(data.hash)
-    await this.userState.waitForSync()
-    await this.loadReputation()
-  }
+  // async requestReputation(posRep, negRep, graffitiPreImage, epkNonce) {
+  //   const epochKeyProof = await this.userState.genEpochKeyProof({nonce: epkNonce})
+  //   const graffiti = hash1([graffitiPreImage])
+  //   const data = await fetch(`${SERVER}/api/request`, {
+  //     method: 'POST',
+  //     headers: {
+  //       'content-type': 'application/json'
+  //     },
+  //     body: JSON.stringify(stringifyBigInts({
+  //       posRep,
+  //       negRep,
+  //       graffiti,
+  //       publicSignals: epochKeyProof.publicSignals,
+  //       proof: epochKeyProof.proof,
+  //     }))
+  //   }).then(r => r.json())
+  //   await provider.waitForTransaction(data.hash)
+  //   await this.userState.waitForSync()
+  //   await this.loadReputation()
+  // }
 
   async stateTransition() {
     await this.userState.waitForSync()

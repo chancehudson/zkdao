@@ -17,6 +17,39 @@ const _schema = [
       ['address', 'String'],
       ['nonce', 'Int'],
     ],
+  },
+  {
+    name: 'Proposal',
+    primaryKey: 'index',
+    rows: [
+      ['index', 'String', { unique: true }],
+      ['type', 'Int'],
+      ['recipient', 'String'],
+      ['amount', 'String'],
+      ['semaphorePubkey', 'String'],
+      ['votesFor', 'Int'],
+      ['votesAgainst', 'Int'],
+      ['quorum', 'String'],
+      ['epoch', 'Int'],
+      ['descriptionHash', 'String'],
+      {
+        name: 'description',
+        type: 'Object',
+        relation: {
+          localField: 'descriptionHash',
+          foreignField: 'hash',
+          foreignTable: 'ProposalDescription',
+        },
+      },
+    ]
+  },
+  {
+    name: 'ProposalDescription',
+    primaryKey: 'hash',
+    rows: [
+      ['hash', 'String'],
+      ['text', 'String']
+    ]
   }
 ]
 
