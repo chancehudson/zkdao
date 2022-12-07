@@ -8,10 +8,10 @@ import { Unirep } from "@unirep/contracts/Unirep.sol";
 contract ZKDAO {
     Unirep public unirep;
 
-    address immutable operator:
+    address immutable operator;
 
     struct Proposal {
-      uint256 type;
+      uint256 _type;
 
     }
     struct SignUpProposal {
@@ -42,7 +42,7 @@ contract ZKDAO {
         uint256[] memory publicSignals,
         uint256[8] memory proof
     ) public payable {
-        if (unirep.attesterMemberCount(uint160(this)) == 0) {
+        if (unirep.attesterMemberCount(uint160(address(this))) == 0) {
           require(msg.sender == operator);
         } else {
           require(approvedSemaphorePubkeys[publicSignals[0]]);
@@ -56,9 +56,9 @@ contract ZKDAO {
       uint256[8] memory proof
     ) public payable {
       unirep.verifyEpochKeyProof(publicSignals, proof);
-      EpochKeySignals memory signals = unirep.decodeEpochKeySignals(publicSignals);
-      require(signals.epoch == unirep.attesterCurrentEpoch(uint160(this)));
-      require(signals.attesterId == uint256(this));
+      Unirep.EpochKeySignals memory signals = unirep.decodeEpochKeySignals(publicSignals);
+      require(signals.epoch == unirep.attesterCurrentEpoch(uint160(address(this))));
+      require(signals.attesterId == uint256(uint160(address(this))));
       unirep.submitAttestation(
         signals.epoch,
         signals.epochKey,
@@ -77,7 +77,7 @@ contract ZKDAO {
     // take an epoch key signing the proposal data
     function proposeSpend(
       uint256[] memory publicSignals,
-      uint256[8] memory proof,
+      uint256[8] memory proof
 
     ) public {
 
@@ -85,7 +85,7 @@ contract ZKDAO {
 
     // The maximum number of votes a user can buy by depositing funds
     function maxVoteCount() public view returns (uint256) {
-      return baseVoteCount + (unirep.attesterCurrentEpoch(uint160(this)) + voteCountChange);
+      return baseVoteCount + (unirep.attesterCurrentEpoch(uint160(address(this))) + voteCountChange);
     }
 
     // vote on a proposal

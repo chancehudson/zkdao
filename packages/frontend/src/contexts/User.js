@@ -66,8 +66,8 @@ class User {
 
   async loadReputation() {
     const epoch = this.userState.calcCurrentEpoch()
-    this.reputation = await this.userState.getRepByAttester(null, epoch + 1)
-    this.provableReputation = await this.userState.getRepByAttester()
+    this.reputation = await this.userState.getRep()
+    this.provableReputation = await this.userState.getProvableRep()
   }
 
   async signup(message) {

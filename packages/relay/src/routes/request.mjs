@@ -1,10 +1,10 @@
 import { ethers } from 'ethers'
-import { EpochKeyProof } from '@unirep/contracts'
+import { EpochKeyProof } from '@unirep/circuits'
 import { APP_ADDRESS } from '../config.mjs'
 import TransactionManager from '../singletons/TransactionManager.mjs'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
-const UnirepApp = require("@unirep-app/contracts/artifacts/contracts/UnirepApp.sol/UnirepApp.json")
+const UnirepApp = require("@unirep-app/contracts/artifacts/contracts/ZKDAO.sol/ZKDAO.json")
 
 export default ({ app, db, synchronizer }) => {
   app.post('/api/request', async (req, res) => {

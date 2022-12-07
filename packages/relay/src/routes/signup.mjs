@@ -1,10 +1,10 @@
-import { SignupProof } from '@unirep/contracts'
+import { SignupProof } from '@unirep/circuits'
 import { ethers } from 'ethers'
 import { APP_ADDRESS } from '../config.mjs'
 import TransactionManager from '../singletons/TransactionManager.mjs'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
-const UnirepApp = require("@unirep-app/contracts/artifacts/contracts/UnirepApp.sol/UnirepApp.json")
+const UnirepApp = require("@unirep-app/contracts/artifacts/contracts/ZKDAO.sol/ZKDAO.json")
 
 export default ({ app, db, synchronizer }) => {
   app.post('/api/signup', async (req, res) => {
@@ -26,7 +26,7 @@ export default ({ app, db, synchronizer }) => {
       const appContract = new ethers.Contract(APP_ADDRESS, UnirepApp.abi)
       // const contract =
       const calldata = appContract.interface.encodeFunctionData(
-        'userSignUp',
+        'signUp',
         [signupProof.publicSignals, signupProof.proof]
       )
       const hash = await TransactionManager.queueTransaction(
