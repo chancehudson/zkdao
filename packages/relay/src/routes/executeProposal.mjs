@@ -1,4 +1,3 @@
-import { EpochKeyProof } from '@unirep/circuits'
 import { ethers } from 'ethers'
 import { APP_ADDRESS } from '../config.mjs'
 import TransactionManager from '../singletons/TransactionManager.mjs'
@@ -7,27 +6,15 @@ const require = createRequire(import.meta.url)
 const UnirepApp = require("@unirep-app/contracts/artifacts/contracts/ZKDAO.sol/ZKDAO.json")
 
 export default ({ app, db, synchronizer }) => {
-  app.post('/api/vote', async (req, res) => {
+  app.post('/api/execute', async (req, res) => {
 
     try {
-      const { publicSignals, proof } = req.body
-      const epochKeyProof = new EpochKeyProof(publicSignals, proof, synchronizer.prover)
-      const valid = await epochKeyProof.verify()
-      if (!valid) {
-        res.status(400).json({ error: 'Invalid proof' })
-        return
-      }
-      const currentEpoch = synchronizer.calcCurrentEpoch()
-      console.log(synchronizer.calcCurrentEpoch())
-      if (currentEpoch !== Number(BigInt(epochKeyProof.epoch))) {
-        res.status(400).json({ error: 'Wrong epoch' })
-        return
-      }
+      const { proposalIndex } = req.body
       const appContract = new ethers.Contract(APP_ADDRESS, UnirepApp.abi)
       // const contract =
       const calldata = appContract.interface.encodeFunctionData(
-        'vote',
-        [epochKeyProof.publicSignals, epochKeyProof.proof]
+        'executeProposal',
+        [proposalIndex]
       )
       const hash = await TransactionManager.queueTransaction(
         APP_ADDRESS,

@@ -40,6 +40,13 @@ export default observer(({ proposal }) => {
           </div>
         ) : null
       }
+      {
+        !proposal.executed && !proposal.active ? (
+          <div style={{ marginTop: '4px', display: 'flex', justifyContent: 'space-around' }}>
+            <Button onClick={() => dao.execute(proposal.index)}>Execute</Button>
+          </div>
+        ) : null
+      }
     </div>
   )
 })

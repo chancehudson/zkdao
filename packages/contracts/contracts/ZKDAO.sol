@@ -44,7 +44,8 @@ contract ZKDAO {
     mapping (uint256 => mapping(uint256 => bool)) epochKeyVotedForProposal;
 
     event NewProposal(uint256 indexed index, Proposal proposal);
-    event ProposalVote(uint256 indexed index, bool isFor);
+    event ProposalVote(uint256 indexed index, bool isFor, uint epochKey);
+    event ProposalExecuted(uint256 indexed index);
 
     constructor(Unirep _unirep, uint256 _epochLength) {
         // set unirep address
@@ -153,21 +154,23 @@ contract ZKDAO {
       } else {
         proposalsByIndex[index].votesAgainst++;
       }
-      emit ProposalVote(index, isFor);
+      emit ProposalVote(index, isFor, signals.epochKey);
     }
 
     function executeProposal(uint256 index) public {
-      require(!proposalHasExecuted[index]);
+      require(!proposalHasExecuted[index], 'double');
       proposalHasExecuted[index] = true;
       Proposal storage proposal = proposalsByIndex[index];
-      require(proposal.votesFor + proposal.votesAgainst >= proposal.quorum);
-      require(proposal.votesFor > proposal.votesAgainst);
+      require(proposal.votesFor + proposal.votesAgainst >= proposal.quorum, 'quorum');
+      require(proposal.votesFor > proposal.votesAgainst, 'votes');
+      require(unirep.attesterCurrentEpoch(uint160(address(this))) > proposal.epoch, 'epoch');
       if (proposal._type == ProposalType.signup) {
         approvedSemaphorePubkeys[proposal.semaphorePubkey] = true;
       } else if (proposal._type == ProposalType.spend) {
         address payable recipient = payable(proposal.recipient);
-        recipient.transfer(proposal.amount);
+        // recipient.transfer(proposal.amount);
       }
+      emit ProposalExecuted(index);
     }
 
     // vote on a proposal

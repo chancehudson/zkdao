@@ -1,8 +1,20 @@
-# create-unirep-app
+# zkdao
 
-This is a demo app of a [unirep](https://github.com/Unirep/Unirep) attester. In this demo app, users can request reputation from the example attester. After transition, user can prove how much reputation he has.
+Users may join the DAO by creating a proposal to add a semaphore identity to the unirep attester. This proposal must be voted on by a quorum of the current members, and the vote must be majority in favor.
 
-> See: [Users and Attesters](https://developer.unirep.io/docs/protocol/users-and-attesters)
+Once a user has joined they may deposit into the DAO and receive positive reputation equal to the amount of wei deposited.
+
+Users can make proposals to spend Ether from the DAO to Ethereum addresses. Users don't need to be members of the group to make such proposals.
+
+A proposal may be executed in the epoch following it's creation, assuming it is ratified.
+
+-- Other details
+
+Positive rep = amount of wei contributed to the DAO
+Negative rep = number of proposals voted on
+Graffiti = unused
+
+# Running the app
 
 ## 1. Installation
 

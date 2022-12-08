@@ -32,6 +32,7 @@ const _schema = [
       ['quorum', 'String'],
       ['epoch', 'Int'],
       ['descriptionHash', 'String'],
+      ['executed', 'Int', { optional: true }],
       {
         name: 'description',
         type: 'Object',

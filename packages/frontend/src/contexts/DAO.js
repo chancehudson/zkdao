@@ -22,6 +22,7 @@ export default class DAO {
 
   async load() {
     await this.loadProposals()
+    setInterval(() => this.loadProposals(), 5000)
   }
 
   get activeProposals() {
@@ -103,6 +104,47 @@ export default class DAO {
         description,
         recipient,
         amount: amountWei.toString(),
+      })
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(`Request failed: ${data?.error}`)
+    }
+    await provider.waitForTransaction(data.hash)
+    await this.loadProposals()
+  }
+
+  async createSignUpProposal(semaphorePubkey, description) {
+    if (typeof description !== 'string') {
+      throw new Error('Invalid description, must be string')
+    }
+    const response = await fetch(`${SERVER}/api/proposal`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: 0, // signup proposal type defined in contract
+        description,
+        semaphorePubkey,
+      })
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(`Request failed: ${data?.error}`)
+    }
+    await provider.waitForTransaction(data.hash)
+    await this.loadProposals()
+  }
+
+  async execute(proposalIndex) {
+    const response = await fetch(`${SERVER}/api/execute`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        proposalIndex,
       })
     })
     const data = await response.json()

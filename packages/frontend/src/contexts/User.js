@@ -26,6 +26,7 @@ export default class User {
     timestamp: 0,
   }
   userState = null
+  id = null
 
   constructor() {
     makeAutoObservable(this)
@@ -38,6 +39,7 @@ export default class User {
     if (!id) {
       localStorage.setItem('id', identity.serializeIdentity())
     }
+    this.id = identity
 
     const db = new MemoryConnector(constructSchema(schema))
     const userState = new UserState({
@@ -97,27 +99,6 @@ export default class User {
     this.latestTransitionedEpoch = this.userState.calcCurrentEpoch()
   }
 
-  // async requestReputation(posRep, negRep, graffitiPreImage, epkNonce) {
-  //   const epochKeyProof = await this.userState.genEpochKeyProof({nonce: epkNonce})
-  //   const graffiti = hash1([graffitiPreImage])
-  //   const data = await fetch(`${SERVER}/api/request`, {
-  //     method: 'POST',
-  //     headers: {
-  //       'content-type': 'application/json'
-  //     },
-  //     body: JSON.stringify(stringifyBigInts({
-  //       posRep,
-  //       negRep,
-  //       graffiti,
-  //       publicSignals: epochKeyProof.publicSignals,
-  //       proof: epochKeyProof.proof,
-  //     }))
-  //   }).then(r => r.json())
-  //   await provider.waitForTransaction(data.hash)
-  //   await this.userState.waitForSync()
-  //   await this.loadReputation()
-  // }
-
   async watchTransition() {
     for (;;) {
       const epoch = await this.userState.latestTransitionedEpoch()
@@ -151,6 +132,7 @@ export default class User {
     await provider.waitForTransaction(data.hash)
     await this.userState.waitForSync()
     this.latestTransitionedEpoch = await this.userState.latestTransitionedEpoch()
+    console.log(`Transitioned to epoch ${this.latestTransitionedEpoch}`)
   }
 
   async proveReputation(minRep = 0, _graffitiPreImage = 0) {
