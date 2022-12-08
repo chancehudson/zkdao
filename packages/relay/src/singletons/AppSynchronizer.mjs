@@ -17,9 +17,6 @@ class DAOSynchronizer extends Synchronizer {
       [daoContract.address]: {
         contract: daoContract,
         eventNames: [
-          'NewProposal',
-          'ProposalVote',
-          'ProposalExecuted',
         ]
       }
     }
@@ -29,47 +26,6 @@ class DAOSynchronizer extends Synchronizer {
  * event handlers
  **/
 
-  async handleProposalExecuted({ event, db, decodedData }) {
-    const proposalIndex = BigInt(decodedData.index).toString()
-    db.update('Proposal', {
-      where: {
-        index: proposalIndex,
-      },
-      update: {
-        executed: 1,
-      }
-    })
-  }
-
-  async handleProposalVote({ event, db, decodedData }) {
-    const proposalIndex = BigInt(decodedData.index).toString()
-    const isFor = decodedData.isFor
-    db.update('Proposal', {
-      where: {
-        index: proposalIndex,
-      },
-      update: {
-        ...(isFor ? { votesFor: 1, } : { votesAgainst: 1 })
-      }
-    })
-  }
-
-  async handleNewProposal({ event, db, decodedData }) {
-    const proposalIndex = BigInt(decodedData.index).toString()
-    const { proposal } = decodedData
-    db.create('Proposal', {
-      index: proposalIndex,
-      type: Number(proposal._type.toString()),
-      recipient: proposal.recipient.toString(),
-      amount: proposal.amount.toString(),
-      semaphorePubkey: proposal.semaphorePubkey.toString(),
-      votesFor: 0,
-      votesAgainst: 0,
-      quorum: proposal.quorum.toString(),
-      epoch: proposal.epoch.toNumber(),
-      descriptionHash: proposal.descriptionHash.toString(),
-    })
-  }
 }
 
 const db = await SQLiteConnector.create(schema, DB_PATH ?? ':memory:')

@@ -11,7 +11,21 @@ import { ethers } from 'ethers'
 
 export default class DAO {
 
-  proposals = []
+  proposals = [
+    {
+      index: 0,
+      executed: false,
+      epoch: 1,
+      votesFor: 0,
+      votesAgainst: 0,
+      quorum: 2,
+      description: 'Hello!',
+      type: 1,
+      amount: 0,
+      recipient: '0x0000000000000000000000000000000000000000',
+      semaphorePubkey: '0'
+    }
+  ]
   proposalsByIndex = {}
 
   constructor(state) {
