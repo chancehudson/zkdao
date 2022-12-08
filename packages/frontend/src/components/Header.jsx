@@ -26,8 +26,6 @@ export default observer(() => {
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div>
-          <div>DAO info</div>
-          <div>Member count: </div>
           <div>Current epoch: {user.currentEpoch}</div>
           <div>Remaining Time: {remainingTime}</div>
         </div>
