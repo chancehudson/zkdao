@@ -1,11 +1,12 @@
 import React from 'react'
+import { observer } from 'mobx-react-lite'
 import Header from './components/Header'
 import Button from './components/Button'
 
-import DAO from './contexts/DAO'
+import State from './contexts/state'
 
-export default () => {
-  const daoContext = React.useContext(DAO)
+export default observer(() => {
+  const { dao } = React.useContext(State)
   const [to, setTo] = React.useState('')
   const [amount, setAmount] = React.useState('')
   const [description, setDescription] = React.useState('')
@@ -28,7 +29,7 @@ export default () => {
         rows={12}
         onChange={(e) => setDescription(e.target.value)} value={description}
       />
-      <Button onClick={() => daoContext.createSpendProposal(to, amount, description)}>Create Proposal</Button>
+      <Button onClick={() => dao.createSpendProposal(to, amount, description)}>Create Proposal</Button>
     </div>
   )
-}
+})

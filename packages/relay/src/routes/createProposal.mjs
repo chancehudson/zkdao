@@ -27,6 +27,17 @@ export default ({ app, db, synchronizer }) => {
 
       const descriptionHash = hash1([`0x${Buffer.from(description).toString('hex')}`])
 
+      await db.upsert('ProposalDescription', {
+        where: {
+          hash: descriptionHash.toString(),
+        },
+        update: {},
+        create: {
+          hash: descriptionHash.toString(),
+          text: description,
+        }
+      })
+
       const appContract = new ethers.Contract(APP_ADDRESS, UnirepApp.abi)
 
       if (type === 0) {

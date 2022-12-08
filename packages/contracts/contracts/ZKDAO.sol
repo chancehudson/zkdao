@@ -40,8 +40,11 @@ contract ZKDAO {
 
     mapping (uint256 => Proposal) public proposalsByIndex;
     mapping (uint256 => bool) public proposalHasExecuted;
+    // proposal index => epoch key => bool
+    mapping (uint256 => mapping(uint256 => bool)) epochKeyVotedForProposal;
 
     event NewProposal(uint256 indexed index, Proposal proposal);
+    event ProposalVote(uint256 indexed index, bool isFor);
 
     constructor(Unirep _unirep, uint256 _epochLength) {
         // set unirep address
@@ -135,17 +138,22 @@ contract ZKDAO {
     ) public {
       unirep.verifyEpochKeyProof(publicSignals, proof);
       Unirep.EpochKeySignals memory signals = unirep.decodeEpochKeySignals(publicSignals);
-      require(signals.epoch == unirep.attesterCurrentEpoch(uint160(address(this))));
+      require(signals.epoch == unirep.attesterCurrentEpoch(uint160(address(this))), 'badepoch');
       require(signals.attesterId == uint256(uint160(address(this))));
+      require(signals.revealNonce == 1, 'nonce');
 
       bool isFor = (signals.data & 1) == 1;
       // proposalIndex = data >> 1
       uint256 index = (signals.data >> 1);
+      require(signals.nonce == index % unirep.numEpochKeyNoncePerEpoch(), 'wrongnonce');
+      require(!epochKeyVotedForProposal[index][signals.epochKey], 'doublevote');
+      epochKeyVotedForProposal[index][signals.epochKey] = true;
       if (isFor) {
         proposalsByIndex[index].votesFor++;
       } else {
         proposalsByIndex[index].votesAgainst++;
       }
+      emit ProposalVote(index, isFor);
     }
 
     function executeProposal(uint256 index) public {

@@ -8,7 +8,7 @@ import { provider, UNIREP_ADDRESS, APP_ADDRESS, SERVER } from '../config'
 import prover from './prover'
 import poseidon from 'poseidon-lite'
 
-class User {
+export default class User {
 
   currentEpoch
   latestTransitionedEpoch
@@ -25,6 +25,7 @@ class User {
     graffiti: 0,
     timestamp: 0,
   }
+  userState = null
 
   constructor() {
     makeAutoObservable(this)
@@ -53,6 +54,14 @@ class User {
     this.userState = userState
     await this.loadReputation()
     this.latestTransitionedEpoch = await this.userState.latestTransitionedEpoch()
+    this.watchTransition()
+    this.watchEpoch()
+  }
+
+  watchEpoch() {
+    this.currentEpoch = this.userState.calcCurrentEpoch()
+    const time = this.userState.calcEpochRemainingTime()
+    setTimeout(() => this.watchEpoch(), time)
   }
 
   // TODO: make this non-async
@@ -109,6 +118,23 @@ class User {
   //   await this.loadReputation()
   // }
 
+  async watchTransition() {
+    for (;;) {
+      const epoch = await this.userState.latestTransitionedEpoch()
+      const hasSignedUp = await this.userState.hasSignedUp()
+      try {
+        if (hasSignedUp && epoch != this.userState.calcCurrentEpoch()) {
+          await this.stateTransition()
+        }
+      } catch (err) {
+        await new Promise(r => setTimeout(r, 10000))
+        continue
+      }
+      const time = this.userState.calcEpochRemainingTime()
+      await new Promise(r => setTimeout(r, time * 1000))
+    }
+  }
+
   async stateTransition() {
     await this.userState.waitForSync()
     const signupProof = await this.userState.genUserStateTransitionProof()
@@ -139,5 +165,3 @@ class User {
     return { ...reputationProof, valid: await reputationProof.verify() }
   }
 }
-
-export default createContext(new User())

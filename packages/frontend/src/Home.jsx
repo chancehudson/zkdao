@@ -6,44 +6,13 @@ import Button from './components/Button'
 import Proposal from './components/Proposal'
 import { useNavigate } from 'react-router'
 
-import User from './contexts/User'
-import DAO from './contexts/DAO'
+import State from './contexts/state'
 
 export default observer(() => {
   const navigate = useNavigate()
-  const userContext = React.useContext(User)
-  const daoContext = React.useContext(DAO)
-  const [remainingTime, setRemainingTime] = React.useState(0)
-  const [reqRep, setReqRep] = React.useState({})
-  const [repProofInputs, setRepProofInputs] = React.useState({})
-  const [repProof, setRepProof] = React.useState(null)
+  const { user, dao } = React.useContext(State)
 
-  const updateTimer = () => {
-    if (!userContext.userState) {
-      setRemainingTime('Loading...')
-      return
-    }
-    const time = userContext.userState.calcEpochRemainingTime()
-    setRemainingTime(time)
-  }
-
-  React.useEffect(() => {
-    setInterval(() => {
-      updateTimer()
-    }, 1000)
-  }, [])
-
-  React.useEffect(() => {
-    if (!userContext.userState) {
-      setTimeout(() => {
-        userContext.epochKey(reqRep.nonce ?? 0).then((key) => setReqRep((v) => ({ ...v, epochKey: key })))
-      }, 1000)
-    } else {
-        userContext.epochKey(reqRep.nonce ?? 0).then((key) => setReqRep((v) => ({ ...v, epochKey: key })))
-    }
-  }, [reqRep.nonce])
-
-  if (!userContext.userState) {
+  if (!user.userState) {
     return (
       <div className="container">
         Loading...
@@ -61,11 +30,11 @@ export default observer(() => {
       <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <div>
           <h4>Active Proposals</h4>
-          {daoContext.proposals.map((p) => <Proposal proposal={p} />)}
+          {dao.activeProposals.map((p) => <Proposal key={p.index} proposal={p} />)}
         </div>
         <div>
           <h4>Past Proposals</h4>
-          {daoContext.proposals.map((p) => <Proposal proposal={p} />)}
+          {dao.pastProposals.map((p) => <Proposal key={p.index} proposal={p} />)}
         </div>
       </div>
     </div>

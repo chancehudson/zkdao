@@ -9,33 +9,77 @@ import prover from './prover'
 import poseidon from 'poseidon-lite'
 import { ethers } from 'ethers'
 
-class DAO {
+export default class DAO {
 
-  proposals = [
-    {
-      epoch: 1,
-      type: 'new-member',
-      text: 'Hi, my name is Joe, I\'d like to join the DAO.',
-      forVotes: 4,
-      againstVotes: 5,
-      quorum: 4,
-    },
-    {
-      epoch: 2,
-      type: 'spend',
-      text: 'I\'d like to pay 0x00 to do some stuff',
-      forVotes: 2,
-      againstVotes: 1,
-      quorum: 4,
-    }
-  ]
+  proposals = []
+  proposalsByIndex = {}
 
-  constructor() {
+  constructor(state) {
     makeAutoObservable(this)
     this.load()
+    this.globalState = state
   }
 
   async load() {
+    await this.loadProposals()
+  }
+
+  get activeProposals() {
+    const currentEpoch = this.globalState.user.userState.calcCurrentEpoch()
+    return this.proposals.filter(({ epoch }) => epoch === currentEpoch).map(p => ({
+      active: true,
+      ...p
+    }))
+  }
+
+  get pastProposals() {
+    const currentEpoch = this.globalState.user.userState.calcCurrentEpoch()
+    return this.proposals.filter(({ epoch }) => epoch < currentEpoch)
+  }
+
+  async loadProposals() {
+    const response = await fetch(`${SERVER}/api/proposals`, {
+      headers: {
+        'content-type': 'application/json',
+      },
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(`Request failed: ${data?.error}`)
+    }
+    const { proposals } = data
+    this.proposals = proposals
+    this.proposalsByIndex = proposals.reduce((acc, obj) => {
+      return {
+        [obj.index]: obj,
+        ...acc,
+      }
+    }, {})
+  }
+
+  async vote(proposalIndex, voteFor) {
+    const { userState } = this.globalState.user
+    const { proof, publicSignals } = await userState.genEpochKeyProof({
+      data: (BigInt(proposalIndex) << 1n) + (voteFor ? 1n : 0n),
+      nonce: proposalIndex % this.globalState.user.userState.settings.numEpochKeyNoncePerEpoch,
+      revealNonce: true,
+    })
+    const response = await fetch(`${SERVER}/api/vote`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        publicSignals,
+        proof,
+      })
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(`Request failed: ${data?.error}`)
+    }
+    await provider.waitForTransaction(data.hash)
+    await this.loadProposals()
   }
 
   async createSpendProposal(recipient, amount, description) {
@@ -66,9 +110,7 @@ class DAO {
       throw new Error(`Request failed: ${data?.error}`)
     }
     await provider.waitForTransaction(data.hash)
-    // TODO: load proposals
+    await this.loadProposals()
   }
 
 }
-
-export default createContext(new DAO())

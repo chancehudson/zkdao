@@ -18,6 +18,7 @@ class DAOSynchronizer extends Synchronizer {
         contract: daoContract,
         eventNames: [
           'NewProposal',
+          'ProposalVote',
         ]
       }
     }
@@ -26,6 +27,19 @@ class DAOSynchronizer extends Synchronizer {
 /**
  * event handlers
  **/
+
+  async handleProposalVote({ event, db, decodedData }) {
+    const proposalIndex = BigInt(decodedData.index).toString()
+    const isFor = decodedData.isFor
+    db.update('Proposal', {
+      where: {
+        index: proposalIndex,
+      },
+      update: {
+        ...(isFor ? { votesFor: 1, } : { votesAgainst: 1 })
+      }
+    })
+  }
 
   async handleNewProposal({ event, db, decodedData }) {
     const proposalIndex = BigInt(decodedData.index).toString()
