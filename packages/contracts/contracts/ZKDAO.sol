@@ -28,10 +28,6 @@ contract ZKDAO {
       uint256 descriptionHash;
     }
 
-    // 0.01 Ether
-    uint256 baseVoteCount = 10000000000000000;
-    // 0.0001 Ether
-    uint256 voteCountChange = 100000000000000;
     // track the proposal numbers
     uint256 proposalIndex = 0;
 
@@ -172,13 +168,4 @@ contract ZKDAO {
       }
       emit ProposalExecuted(index);
     }
-
-    // vote on a proposal
-    // set min contribution amount and max contribution amount
-
-    // halt the DAO and allow everyone to withdraw
-
-    // 1 new member each epoch
-    // vote on new member
-    // majority must participate in vote
 }
